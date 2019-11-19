@@ -3,13 +3,16 @@ import s3 = require("@aws-cdk/aws-s3");
 import ec2 = require("@aws-cdk/aws-ec2");
 import elbv2 = require('@aws-cdk/aws-elasticloadbalancingv2');
 import { InstanceType, UserData, SubnetType } from '@aws-cdk/aws-ec2';
+import { Stack } from '@aws-cdk/core';
 
 export class ElbEc2MonitoringStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
     
     //Create a VPC
-    const vpc = new ec2.Vpc(this, 'ELBEC2_VPC');
+    const vpc = new ec2.Vpc(this, 'ELBEC2_VPC',{
+      maxAzs: 3
+    });
     
     // define user data for EC2 instance: it will install HTTPD and setup a simple index.html 
     const ud = UserData.forLinux();
@@ -29,6 +32,10 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
         allowAllOutbound: true,
       })
       
+      const vpcPrivateSubnetSelection = vpc.selectSubnets({
+        subnetType: SubnetType.PRIVATE
+     });
+
       // Define Instance 1 
       const instance1 = new ec2.Instance(this, "myEc2Elb_1",{
         vpc,
@@ -37,8 +44,10 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
         keyName: "kp-ec2-cloudwatch",
         userData: ud,
         securityGroup: sg,
-        // availabilityZone: "eu-west-1a" //NTH
+        //WARNING -> Not a great way and recommended way to do things, just as experiment
+        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[0], 
       });
+      instance1.instance.tags.setTag("Region",Stack.of(this).region);
 
       // Define Instance 2
       const instance2 = new ec2.Instance(this, "myEc2Elb_2",{
@@ -47,9 +56,11 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
         machineImage: new ec2.AmazonLinuxImage(),
         keyName: "kp-ec2-cloudwatch",
         userData: ud,
-        securityGroup: sg
-        // availabilityZone: "eu-west-1b" //NTH
+        securityGroup: sg,
+        //WARNING -> Not a great way and recommended way to do things, just as experiment
+        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[1], //NTH
       });
+      instance2.instance.tags.setTag("Region",Stack.of(this).region);
 
       //Define a Load Balancer and listener
       const loadBalancer = new elbv2.ApplicationLoadBalancer(this, "LoadBalancer", {
