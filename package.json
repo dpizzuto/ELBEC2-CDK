@@ -5,6 +5,7 @@
     "elb-ec2-monitoring": "bin/elb-ec2-monitoring.js"
   },
   "scripts": {
+    "generate": "tsc && cdk synth",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
@@ -22,6 +23,10 @@
   },
   "dependencies": {
     "@aws-cdk/core": "^1.16.3",
+    "@aws-cdk/aws-s3": "*",
+    "@aws-cdk/aws-ec2": "*",
+    "@aws-cdk/aws-elasticloadbalancingv2": "*",
+    "@aws-cdk/aws-autoscaling": "*",
     "source-map-support": "^0.5.16"
   }
 }
