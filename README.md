@@ -2,11 +2,12 @@
 The following experiment aims to show some feature of  [Cloud Development Kit](https://docs.aws.amazon.com/cdk/latest/guide/home.html). 
 Typescript is used for the example while CDK, at the date, supports: Python, JavaScript, .NET and Java. 
 
-<img src="https://docs.aws.amazon.com/cdk/latest/guide/images/AppStacks.png" width="70%" display="block" />
+<img src="https://docs.aws.amazon.com/cdk/latest/guide/images/AppStacks.png" width="70%" display="block" margin-left="auto" margin-right="auto" />
 
 
 # Goal
 Deploy Two EC2 within a private subnet of a VPC, served by a ELB.
+<img src="./resources/high-level-architecture.png" width="70%" display="block" margin-left="auto" margin-right="auto" />
 
 # What you need
 * Your fav IDE
