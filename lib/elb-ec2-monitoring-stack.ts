@@ -10,9 +10,12 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
     super(scope, id, props);
     
     //Create a VPC
-    const vpc = new ec2.Vpc(this, 'ELBEC2_VPC',{
+    const vpc = new ec2.Vpc(this, 'ELBEC2_VPC'{
       maxAzs: 3
     });
+
+    console.warn("Number of private subnet ");
+    console.warn(vpc.privateSubnets.length);
     
     // define user data for EC2 instance: it will install HTTPD and setup a simple index.html 
     const ud = UserData.forLinux();
@@ -33,7 +36,8 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
       })
       
       const vpcPrivateSubnetSelection = vpc.selectSubnets({
-        subnetType: SubnetType.PRIVATE
+        subnetType: SubnetType.PRIVATE,
+        onePerAz: true
      });
 
       // Define Instance 1 
@@ -44,8 +48,9 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
         keyName: "kp-ec2-cloudwatch",
         userData: ud,
         securityGroup: sg,
+        vpcSubnets: vpcPrivateSubnetSelection,
         //WARNING -> Not a great way and recommended way to do things, just as experiment
-        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[0], 
+        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[0]
       });
       instance1.instance.tags.setTag("Region",Stack.of(this).region);
 
@@ -57,10 +62,25 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
         keyName: "kp-ec2-cloudwatch",
         userData: ud,
         securityGroup: sg,
+        vpcSubnets: vpcPrivateSubnetSelection,
         //WARNING -> Not a great way and recommended way to do things, just as experiment
-        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[1], //NTH
+        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[1]
       });
       instance2.instance.tags.setTag("Region",Stack.of(this).region);
+
+       // Define Instance 3
+       const instance3 = new ec2.Instance(this, "myEc2Elb_3",{
+        vpc,
+        instanceType: new InstanceType("t2.micro"),
+        machineImage: new ec2.AmazonLinuxImage(),
+        keyName: "kp-ec2-cloudwatch",
+        userData: ud,
+        securityGroup: sg,
+        vpcSubnets: vpcPrivateSubnetSelection,
+        //WARNING -> Not a great way and recommended way to do things, just as experiment
+        availabilityZone: vpcPrivateSubnetSelection.availabilityZones[2]
+      });
+      instance3.instance.tags.setTag("Region",Stack.of(this).region);
 
       //Define a Load Balancer and listener
       const loadBalancer = new elbv2.ApplicationLoadBalancer(this, "LoadBalancer", {
@@ -78,9 +98,10 @@ export class ElbEc2MonitoringStack extends cdk.Stack {
       //Setup Load Balancer Targets
       const instTarget1 = new elbv2.InstanceTarget(instance1.instanceId,80);
       const instTarget2 = new elbv2.InstanceTarget(instance2.instanceId,80);
+      const instTarget3 = new elbv2.InstanceTarget(instance3.instanceId,80);
       lbListener.addTargets("",{
         port: 80,
-        targets:[instTarget1, instTarget2]
+        targets:[instTarget1, instTarget2,instTarget3]
       })
 
       //Define Load Balancer's Security Group
