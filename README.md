@@ -32,6 +32,19 @@ and then
 
 In particular the last command will produce the CloudFormation JSON within ~/youp-roject/cdk.out/prjName.template.json
 
+# Note
+If you want to use all AZs within a region to create High Available and Fault Tolerant application, you have to specify Region and Account in **bin/elb-ec2-monitoring.ts** file. 
+Here the example:
+
+```Typescript
+new ElbEc2MonitoringStack(app, 'ElbEc2MonitoringStack',{
+    env:{
+        region: "XXX", //example: eu-west-1
+        account: "YYY",//Insert your account here, if you want a correct Subnet creation per each AZ in the region
+    }
+});
+```
+
 # Useful commands
 
  * `npm run build`   compile typescript to js
