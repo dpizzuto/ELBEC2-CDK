@@ -7,7 +7,7 @@ Typescript is used for the example while CDK, at the date, also supports: Python
 
 # Goal
 Deploy three EC2 within private subnets of a VPC, served by a ELB as shown below. 
-<img src="./resources/high-level-architecture_v2.png" width="70%" display="block" margin-left="auto" margin-right="auto" />
+<img src="./resources/high-level-architecture_v3.png" width="70%" display="block" margin-left="auto" margin-right="auto" />
 
 # What you need
 * Your fav IDE
